@@ -1,0 +1,46 @@
+sudo: false
+
+language: c
+
+addons:
+  apt:
+    packages:
+      - mingw-w64
+      - libc6-dev-i386
+      - libc6:i386
+      - libstdc++6:i386
+      - linux-libc-dev:i386
+      - gcc-4.8-multilib
+      - luajit
+      
+before_install:
+  # Download the lua
+  - |
+    curl -L 'https://github.com/Metastruct/gtravis/releases/download/travisbins/gluac.tar.xz' |tar -xJf - \
+      && export LD_LIBRARY_PATH=`pwd`/gluac${LD_LIBRARY_PATH:+:}${LD_LIBRARY_PATH:-} \
+      && export PATH=$PATH:`pwd`/gluac
+  
+  # Compile luajit for windows libraries
+  - |
+    curl -L 'https://luajit.org/download/LuaJIT-2.0.5.tar.gz' |tar -xzf - \
+      && pushd LuaJIT-2.0.5/src/ \
+      && make HOST_CC="gcc -m32" CROSS=i686-w64-mingw32- TARGET_SYS=Windows BUILDMODE=static \
+      && popd
+  - npm install
+  
+script:
+  - ls *.lua | xargs -- gluac -p --
+  - CC=i686-w64-mingw32-gcc NM=i686-w64-mingw32-nm make luastaticlib=./LuaJIT-2.0.5/src/libluajit.a luaincludedir=./LuaJIT-2.0.5/src/
+  - file *
+
+deploy:
+  provider: releases
+  api_key:
+    secure: "q7wkU3d934aW/8DyJOPQkV1bt8RctjWU6PD0lLyoeizpcBhso9OEeHAkdGajrW5i04V9/c7+cNXDC9Xbd9gr/OfrLRjl/rt8e/O1C/PYqYmjjnGY0q0q1nCj0ma0HrzLu8ZSH0KiTLjDn8qraQOIGoARXviLpQWbIZ0lixOWAGR+ZCwPhsu3nwCuSMukLPHe29sesaAMrfnj9OWZrLaAjnSs7hOCjQvJRBOfBI3iSzgAB7d7YVttsgrMzw7cFc2bIlQd6U1I+etrOYQ12qYZQXN8GJ/EakGQsNZTQ0Lmv0qgfTRk5+1hhz9ZuGlmZQq9OZkBYRqx+727YFZuOAG2hXQa4i6olFv8hejcHR6birlltAQ4M4Nw3YdXmFc/HV5OKB3i2Je8pOp3rnfyIVjiRYrFW07UaHO0bvsIKnGSoCOyZUlm5VX1PVjlQdW+fANJeNPoZqem/g/bR4keiMFMX+VZmyJVlV7F7Si4EhjU0pcElYlCVFM2EZsS2Z84hWYhKV182RUlanhUZtoEIqToovoMO2f4COMndmY9WQ0tFJoucw12oD8nxgCqoZqJuL2o8ytlY+HxcrSUks2KnBDcO8XN65jIEBfCr46/7GGJ4ZFOviAjn3zLE+/79U1pJEiTx/4IpceQu1Vak+NLIP8shEcK/PsaYFXK+36LLeWfZNU="
+  file: valvekiller.exe
+  skip_cleanup: true
+  on:
+    branch: master
+branches:
+  only:
+  - master

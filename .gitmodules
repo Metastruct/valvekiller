@@ -1,0 +1,3 @@
+[submodule "vstruct"]
+	path = vstruct
+	url = https://github.com/ToxicFrog/vstruct.git
