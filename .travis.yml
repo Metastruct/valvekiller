@@ -2,16 +2,20 @@ sudo: false
 
 language: c
 
+os: linux
+compiler: x86_64-w64-mingw32-g++
+dist: trusty
 addons:
   apt:
     packages:
-      - mingw-w64
-      - libc6-dev-i386
-      - libc6:i386
-      - libstdc++6:i386
-      - linux-libc-dev:i386
-      - gcc-4.8-multilib
+      - gcc-mingw-w64-base
+      - binutils-mingw-w64-x86-64
+      - gcc-mingw-w64-x86-64
+      - gcc-mingw-w64
+      - g++-mingw-w64-x86-64
       - luajit
+
+
       
 before_install:
   # Download the lua
@@ -24,13 +28,13 @@ before_install:
   - |
     curl -L 'https://luajit.org/download/LuaJIT-2.0.5.tar.gz' |tar -xzf - \
       && pushd LuaJIT-2.0.5/src/ \
-      && make HOST_CC="gcc -m32" CROSS=i686-w64-mingw32- TARGET_SYS=Windows BUILDMODE=static \
+      && make HOST_CC="gcc" CROSS=x86_64-w64-mingw32- TARGET_SYS=Windows BUILDMODE=static \
       && popd
   - npm install
   
 script:
   - ls *.lua | xargs -- gluac -p --
-  - CC=i686-w64-mingw32-gcc NM=i686-w64-mingw32-nm make luastaticlib=./LuaJIT-2.0.5/src/libluajit.a luaincludedir=./LuaJIT-2.0.5/src/
+  - CC=x86_64-w64-mingw32-gcc NM=x86_64-w64-mingw32-nm make luastaticlib=./LuaJIT-2.0.5/src/libluajit.a luaincludedir=./LuaJIT-2.0.5/src/
   - file *
 
 deploy:
